@@ -1,0 +1,121 @@
+library(rtracklayer)
+ library(GenomicRanges)
+
+
+LTR_file <- rtracklayer::import("/workdir/Manu/Data/for_John/LTR_files/Putative_solo_MER48_loci.bed")
+Peak_results_file_names <- list.files(path="/workdir/Manu/Data/for_John/peaks/",recursive=T, full=T)
+LTR_file <- unique(LTR_file)
+LTR_filedf <- unique(as.data.frame(LTR_file))
+BinaryDF <- data.frame(matrix(NA, nrow = nrow(LTR_filedf), ncol = length(Peak_results_file_names)))
+ rownames(BinaryDF) <- (paste0(LTR_filedf[,1],":",LTR_filedf[,2],"-",LTR_filedf[,3]))
+for (i in 1:length(Peak_results_file_names)){
+   cat("loop", i, "\n")  
+  Sample_name <- strsplit(unlist(lapply(strsplit(Peak_results_file_names[i],"/"),tail,1)),"sorted_")[[1]][1]  
+  Bed1 <-  rtracklayer::import(Peak_results_file_names[i])
+  
+  hits <- GenomicRanges::countOverlaps(LTR_file, Bed1)
+  
+  colnames(BinaryDF)[i] <- Sample_name
+  BinaryDF[,i] <- (as.data.frame(hits)[,1])
+ }
+ 
+ 
+ la = (BinaryDF)
+ ### for heatmap using gplots and RColorBrewer libraries
+
+
+library(RColorBrewer)
+library(gplots)
+
+## converting into the matrix as the 'la' is a dataframe
+
+mydata <- as.matrix(la)
+hr <- hclust(as.dist(1-cor(t(mydata), method="pearson")), method="complete") # Cluster rows by Pearson correlation.
+hc <- hclust(as.dist(1-cor(mydata, method="spearman")), method="complete") # Clusters columns by Spearman correlation.
+mycl <- cutree(hr,k=4, h=max(hr$height)/1.5); 
+ mycolhc <- rainbow(length(unique(mycl)), start=0.1, end=0.9); mycolhc <- mycolhc[as.vector(mycl)] ; myheatcol <- bluered(75)
+png("Heatmap_Binary_matrix_Suppressyn_TFs_badheatmap.png",  width = 18.7, height = 22.8, units = "cm", res = 600, pointsize = 12)
+   
+     heatmap.2(mydata, 
+           scale="none", 
+   density.info="none",
+           trace="none",
+           cexRow=0.2,
+           col=c("grey90","black"),
+           Rowv=FALSE, Colv=FALSE,
+   cexCol=0.6, keysize=1, margin=c(12, 5),
+   key.xlab="peaks")
+           dev.off()
+           
+           
+library(ComplexHeatmap)
+library(circlize)
+library(colorspace)
+library(GetoptLong)
+mat <- as.matrix(la)
+
+ha_mix_top = HeatmapAnnotation(violin = anno_density(mat, type = "violin", gp = gpar(fill = rep("grey", 11))),
+    heatmap = anno_density(mat, type = "heatmap")) 
+png("Heatmap_Binary_matrix_Suppressyn_complex_TFs.png",  width = 18.7, height = 22.8, units = "cm", res = 600, pointsize = 12)
+ Heatmap(mat, name = "peaks", col = colorRamp2(c(0, 1), c("grey90",  "black")), row_names_gp = gpar(fontsize = 0.0000001), km = 2, gap = unit(1, "mm"), top_annotation = ha_mix_top)
+dev.off()
+save.image("suppressyn_Binary.RData")
+savehistory("suppressyn_Binary.Rhistory")
+q()
+
+library(rtracklayer)
+ library(GenomicRanges)
+Peak_results_file_names <- list.files(path="/workdir/Manu/Data/for_John/peaks/",recursive=T, full=T)
+LTR_file <- rtracklayer::import("/workdir/Manu/Data/for_John/LTR_files/Putative_full_length_HERVH48_loci.bed")
+LTR_file <- unique(LTR_file)
+LTR_filedf <- unique(as.data.frame(LTR_file))
+BinaryDF <- data.frame(matrix(NA, nrow = nrow(LTR_filedf), ncol = length(Peak_results_file_names)))
+ rownames(BinaryDF) <- (paste0(LTR_filedf[,1],":",LTR_filedf[,2],"-",LTR_filedf[,3]))
+for (i in 1:length(Peak_results_file_names)){
+   cat("loop", i, "\n")  
+  Sample_name <- strsplit(unlist(lapply(strsplit(Peak_results_file_names[i],"/"),tail,1)),"sorted_")[[1]][1]  
+  Bed1 <-  rtracklayer::import(Peak_results_file_names[i])
+  
+  hits <- GenomicRanges::countOverlaps(LTR_file, Bed1)
+  
+  colnames(BinaryDF)[i] <- Sample_name
+  BinaryDF[,i] <- (as.data.frame(hits)[,1])
+ }
+head(BinaryDF)
+apply(BinaryDF, 2, sum)
+BinaryDF[grep("chr21:44336852-44345986", row.names(BinaryDF)),]
+la = (BinaryDF)
+
+library(RColorBrewer)
+library(gplots)
+
+mydata <- as.matrix(la)
+hr <- hclust(as.dist(1-cor(t(mydata), method="pearson")), method="complete") # Cluster rows by Pearson correlation.
+hc <- hclust(as.dist(1-cor(mydata, method="spearman")), method="complete") # Clusters columns by Spearman correlation.
+mycl <- cutree(hr,k=4, h=max(hr$height)/1.5); 
+ mycolhc <- rainbow(length(unique(mycl)), start=0.1, end=0.9); mycolhc <- mycolhc[as.vector(mycl)] ; myheatcol <- bluered(75)
+png("Heatmap_Binary_matrix_Suppressyn_TFs_badheatmap.png",  width = 18.7, height = 22.8, units = "cm", res = 600, pointsize = 12)
+   
+     heatmap.2(mydata, 
+           scale="none", 
+   density.info="none",
+           trace="none",
+           cexRow=0.2,
+           col=c("grey90","black"),
+           Rowv=FALSE, Colv=FALSE,
+   cexCol=0.6, keysize=1, margin=c(12, 5),
+   key.xlab="peaks")
+           dev.off()
+library(ComplexHeatmap)
+library(circlize)
+library(colorspace)
+library(GetoptLong)
+mat <- as.matrix(la)
+
+ha_mix_top = HeatmapAnnotation(violin = anno_density(mat, type = "violin", gp = gpar(fill = rep("grey", 11))),
+    heatmap = anno_density(mat, type = "heatmap")) 
+png("Heatmap_Binary_matrix_Suppressyn_complex_TFs.png",  width = 18.7, height = 22.8, units = "cm", res = 600, pointsize = 12)
+ Heatmap(mat, name = "peaks", col = colorRamp2(c(0, 1), c("grey90",  "black")), row_names_gp = gpar(fontsize = 0.0000001), km = 2, gap = unit(1, "mm"), top_annotation = ha_mix_top)
+dev.off()
+save.image("suppressyn_Binary.RData")
+savehistory("suppressyn_Binary.Rhistory")
