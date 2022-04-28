@@ -1,0 +1,60 @@
+for i in *.gz; \
+      do \
+           bowtie2 \
+                --phred33 -p 4 \
+                --very-sensitive-local \
+                -x /workdir/Manu/Homo_Genome/Genome/bowtie2_index/hg19 \
+                -U "$i" \
+                -S "$i".sam; \
+      done
+
+
+for i in *.sam; \
+       do \
+              macs2 \
+                 callpeak -t "$i" \
+                          -f SAM \
+                          -g hs \
+                          -n "$i" \
+                          -B; \
+        done
+
+
+
+
+
+
+
+
+F1=/workdir/Manu/Data/3_D/ChIA_PET/Naive_rep1_1.fastq
+F2=/workdir/Manu/Data/3_D/ChIA_PET/Naive_rep1_2.fastq
+L1=/workdir/Manu/Data/3_D/ChIA_PET/linker_ChIA_PET_NP_hESC.txt
+chr1=/workdir/Manu/Data/3_D/ChIA_PET/hg19.chromSize.txt
+cyt1=/workdir/Manu/Data/for_Tommy/3_D/ChIA_PET/hg19_cytoBandIdeo.txt
+
+/usr/bin/java -jar \
+                /workdir/Manu/ChIA-PET_Tool_V3/ChIA-PET.jar \
+                --mode 0 \
+                --fastq1 $F1 \
+                --fastq2 $F2 \
+                --linker $L1 \
+                --minimum_linker_alignment_score 8 \
+                --GENOME_INDEX hg19.fa \
+                --GENOME_LENGTH 3E9 \
+                --CHROM_SIZE_INFO $chr1 \
+                --CYTOBAND_DATA $cyt1 \
+                --SPECIES 1 \
+                --output test_short \
+                --prefix Naive_SMC1 \
+                --thread 4
+R
+library(ChIAPoP)
+pop.pipeline(fastq.1="/workdir/Manu/Data/3_D/ChIA_PET/Naive_rep1_1.fastq", 
+             fastq.2="/workdir/Manu/Data/3_D/ChIA_PET/Naive_rep1_2.fastq",
+             bowtie.index="/workdir/Manu/Homo_Genome/Genome/bowtie_index/hg19", 
+             bowtie.path = "/programs/bin/bowtie/bowtie",
+             macs2.path = "/programs/MACS2-2.1.0/bin/macs2", 
+             gsize = "hs",
+             chr.include = "all", 
+             ref.genome = "hg19")
+             
